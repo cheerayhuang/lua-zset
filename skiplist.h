@@ -12,10 +12,10 @@ typedef struct slobj {
 typedef struct skiplistNode {
     slobj* obj;
     double score;
-    struct skiplistNode *backward;
+    struct skiplistNode *backward; // for iterate backward
     struct skiplistLevel {
-        struct skiplistNode *forward;
-        unsigned int span;
+        struct skiplistNode *forward; // skip & entre into next level
+        unsigned int span;      // for compute rank
     }level[];
 } skiplistNode;
 

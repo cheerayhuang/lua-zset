@@ -10,6 +10,26 @@
 #include "lauxlib.h"
 #include "skiplist.h"
 
+#if LUA_VERSION_NUM == 501
+
+#define luaL_newlib(L ,reg) luaL_register(L,"protobuf.c",reg)
+#define luaL_buffinit(L , _ ) 
+#define luaL_prepbuffsize( b , cap ) malloc(cap)
+#define _Free(p) free(p)
+#undef luaL_addsize
+#define luaL_addsize(b , len) lua_pushlstring(L, temp , len) ; free(temp)
+#define luaL_pushresult(b) 
+#define luaL_checkversion(L)
+#define luaL_checkunsigned(L, p) luaL_checkint(L, p)
+#define lua_pushunsigned(L, n) lua_pushinteger(L, n) 
+
+#else
+
+#define _Free(p)
+
+#endif
+
+
 static inline skiplist*
 _to_skiplist(lua_State *L) {
     skiplist **sl = lua_touserdata(L, 1);
@@ -37,7 +57,7 @@ _delete(lua_State *L) {
     double score = luaL_checknumber(L, 2);
     luaL_checktype(L, 3, LUA_TSTRING);
     slobj obj;
-    obj.ptr = lua_tolstring(L, 3, &obj.length);
+    obj.ptr = (char *)lua_tolstring(L, 3, &obj.length);
     lua_pushboolean(L, slDelete(sl, score, &obj));
     return 1;
 }
@@ -79,7 +99,7 @@ _get_rank(lua_State *L) {
     double score = luaL_checknumber(L, 2);
     luaL_checktype(L, 3, LUA_TSTRING);
     slobj obj;
-    obj.ptr = lua_tolstring(L, 3, &obj.length);
+    obj.ptr = (char*)lua_tolstring(L, 3, &obj.length);
 
     unsigned long rank = slGetRank(sl, score, &obj);
     if(rank == 0) {

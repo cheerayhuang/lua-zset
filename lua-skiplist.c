@@ -183,10 +183,10 @@ static int
 _new(lua_State *L) {
     skiplist *psl = slCreate();
 
-    skiplist **sl = (skiplist**) lua_newuserdata(L, sizeof(skiplist*));
+    skiplist **sl = (skiplist**) lua_newuserdata(L, sizeof(skiplist*)); //userdata
     *sl = psl;
-    lua_pushvalue(L, lua_upvalueindex(1));
-    lua_setmetatable(L, -2);
+    lua_pushvalue(L, lua_upvalueindex(1)); // userdata, {__index = l, __gc=_release()}
+    lua_setmetatable(L, -2);  // userdata
     return 1;
 }
 
@@ -215,14 +215,14 @@ int luaopen_skiplist_c(lua_State *L) {
         {NULL, NULL}
     };
 
-    lua_createtable(L, 0, 2);
+    lua_createtable(L, 0, 2);  // {}, size = 2  
 
-    luaL_newlib(L, l);
-    lua_setfield(L, -2, "__index");
-    lua_pushcfunction(L, _release);
-    lua_setfield(L, -2, "__gc");
+    luaL_newlib(L, l);   // {}, l{...}
+    lua_setfield(L, -2, "__index"); // {_index = l} 
+    lua_pushcfunction(L, _release); // {_index = l}, _release() 
+    lua_setfield(L, -2, "__gc");    // {_index = l, __gc=_release()}
 
-    lua_pushcclosure(L, _new, 1);
+    lua_pushcclosure(L, _new, 1);  // {_index = l, __gc=_release()}, _new()
     return 1;
 }
 
